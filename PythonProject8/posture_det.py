@@ -5,7 +5,7 @@ import numpy as np
 
 
 # ==========================================
-# INITIALIZE MEDIAPIPE POSE
+# INITIALIZE MEDIAPIPE
 # ==========================================
 
 mp_pose = mp.solutions.pose
@@ -18,32 +18,24 @@ mp_drawing = mp.solutions.drawing_utils
 
 def detect_posture(image):
 
-    """
-    Detect human body landmarks from an RGB image.
-
-    Returns:
-        annotated_image
-        landmarks
-        width
-        height
-    """
-
     if image is None:
         raise ValueError("Input image is empty.")
 
-    # Ensure image is RGB
+    # Convert input into NumPy array
     image = np.asarray(image)
 
     if image.ndim != 3 or image.shape[2] != 3:
         raise ValueError("Image must have 3 RGB channels.")
 
+    # Ensure uint8 format
+    image = np.ascontiguousarray(
+        image, dtype=np.uint8
+    )
+
     height, width = image.shape[:2]
 
-    # Make image compatible with MediaPipe
-    image = np.ascontiguousarray(
-        image,
-        dtype=np.uint8
-    )
+    # Create a copy for annotation
+    annotated_image = image.copy()
 
     # ======================================
     # MEDIAPIPE DETECTION
@@ -71,8 +63,6 @@ def detect_posture(image):
     # DRAW LANDMARKS
     # ======================================
 
-    annotated_image = image.copy()
-
     mp_drawing.draw_landmarks(
         annotated_image,
         results.pose_landmarks,
@@ -80,8 +70,12 @@ def detect_posture(image):
     )
 
     # ======================================
-    # RETURN RESULTS
+    # RETURN RGB IMAGE
     # ======================================
+
+    annotated_image = np.ascontiguousarray(
+        annotated_image
+    )
 
     return (
         annotated_image,
@@ -97,10 +91,6 @@ def detect_posture(image):
 
 def get_landmark_details(landmarks, width, height):
 
-    """
-    Return all 33 detected landmarks.
-    """
-
     landmark_details = []
 
     for index, landmark in enumerate(landmarks):
@@ -109,17 +99,11 @@ def get_landmark_details(landmarks, width, height):
 
             "id": index,
 
-            "x": round(
-                float(landmark.x * width), 2
-            ),
+            "x": round(float(landmark.x * width), 2),
 
-            "y": round(
-                float(landmark.y * height), 2
-            ),
+            "y": round(float(landmark.y * height), 2),
 
-            "z": round(
-                float(landmark.z), 4
-            ),
+            "z": round(float(landmark.z), 4),
 
             "visibility": round(
                 float(landmark.visibility), 4
