@@ -1,6 +1,7 @@
 streamlit
 numpy
-mediapipe
+mediapipe==0.10.21
+opencv-contrib-python
 Pillow
 python-dotenv
 openai
