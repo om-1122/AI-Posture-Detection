@@ -1,3 +1,4 @@
+
 import streamlit as st
 import numpy as np
 import json
@@ -400,4 +401,4 @@ st.divider()
 st.caption(
     "AI Human Posture Detection System | "
     "Python + MediaPipe + OpenCV + Streamlit + Groq AI"
-) 
+)
