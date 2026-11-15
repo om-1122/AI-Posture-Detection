@@ -2,6 +2,7 @@
 import streamlit as st
 import numpy as np
 import json
+import traceback
 
 from PIL import Image, ImageOps
 from dotenv import load_dotenv
@@ -73,25 +74,69 @@ if uploaded_file is not None:
         # READ ORIGINAL IMAGE
         # ==================================
 
+        st.write("### Step 1: Reading Uploaded Image")
+
+        uploaded_file.seek(0)
+
         image = Image.open(uploaded_file)
 
-        # Correct image orientation
         image = ImageOps.exif_transpose(image)
 
-        # Convert to RGB
         image = image.convert("RGB")
 
-        # Convert to NumPy array
-        image_array = np.array(image)
+        image_array = np.asarray(
+            image,
+            dtype=np.uint8
+        )
+
+        # ==================================
+        # IMAGE DEBUG INFORMATION
+        # ==================================
+
+        st.success("Image successfully received!")
+
+        st.write("Image format:", image.format)
+
+        st.write("Image dimensions:", image.size)
+
+        st.write("Array shape:", image_array.shape)
+
+        st.write("Array data type:", image_array.dtype)
+
+        st.write(
+            "Pixel minimum:",
+            int(image_array.min())
+        )
+
+        st.write(
+            "Pixel maximum:",
+            int(image_array.max())
+        )
+
+        # ==================================
+        # DISPLAY ORIGINAL IMAGE
+        # ==================================
 
         st.divider()
+
+        st.header("📸 Original Photograph")
+
+        st.image(
+            image,
+            caption="Uploaded Original Photograph",
+            use_container_width=True
+        )
 
         # ==================================
         # MEDIAPIPE DETECTION
         # ==================================
 
+        st.divider()
+
+        st.header("🤖 AI Human Detection")
+
         with st.spinner(
-            "Detecting human body landmarks..."
+            "MediaPipe is detecting human body landmarks..."
         ):
 
             annotated_image, landmarks, width, height = (
@@ -99,63 +144,41 @@ if uploaded_file is not None:
             )
 
         # ==================================
-        # DISPLAY BOTH IMAGES
+        # DISPLAY RECOGNIZED IMAGE
         # ==================================
 
-        st.header("📸 Posture Detection Images")
+        st.header("📷 Recognized Photograph")
 
-        col1, col2 = st.columns(2)
+        if annotated_image is not None:
 
-        with col1:
+            annotated_image = np.asarray(
+                annotated_image,
+                dtype=np.uint8
+            )
 
-            st.subheader("Original Photograph")
+            st.write(
+                "Recognized image shape:",
+                annotated_image.shape
+            )
+
+            st.write(
+                "Recognized image pixel range:",
+                int(annotated_image.min()),
+                "to",
+                int(annotated_image.max())
+            )
 
             st.image(
-                image_array,
+                annotated_image,
+                caption="MediaPipe Pose Detection",
                 channels="RGB",
                 use_container_width=True
             )
 
-        with col2:
+        else:
 
-            st.subheader("Recognized Photograph")
-
-            if annotated_image is not None:
-
-                st.image(
-                    annotated_image,
-                    channels="RGB",
-                    caption="MediaPipe Pose Detection",
-                    use_container_width=True
-                )
-
-            else:
-
-                st.warning(
-                    "No human body detected."
-                )
-
-        # ==================================
-        # IMAGE INFORMATION
-        # ==================================
-
-        with st.expander("Image Information"):
-
-            st.write(
-                "Original image dimensions:",
-                image_array.shape
-            )
-
-            if annotated_image is not None:
-
-                st.write(
-                    "Recognized image dimensions:",
-                    annotated_image.shape
-                )
-
-            st.write(
-                "Landmarks detected:",
-                landmarks is not None
+            st.warning(
+                "MediaPipe did not detect a human body."
             )
 
         # ==================================
@@ -165,8 +188,9 @@ if uploaded_file is not None:
         if landmarks is None:
 
             st.error(
-                "No person detected. "
-                "Please upload another clear photograph."
+                "No human body detected. "
+                "Please upload a clear photograph showing "
+                "the person's body."
             )
 
         else:
@@ -190,7 +214,7 @@ if uploaded_file is not None:
             st.header("📍 Detected Body Landmarks")
 
             st.write(
-                "Total landmarks:",
+                "Total landmarks detected:",
                 len(details)
             )
 
@@ -389,6 +413,12 @@ if uploaded_file is not None:
         st.error(
             f"Application Error: {error}"
         )
+
+        with st.expander("Technical Error Details"):
+
+            st.code(
+                traceback.format_exc()
+            )
 
 
 else:
