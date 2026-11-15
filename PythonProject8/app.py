@@ -400,4 +400,4 @@ st.divider()
 st.caption(
     "AI Human Posture Detection System | "
     "Python + MediaPipe + OpenCV + Streamlit + Groq AI"
-) this i smy coe and my ige is not iplayong on the website so what i the fix
+) 
