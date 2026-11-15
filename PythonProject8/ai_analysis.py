@@ -1,4 +1,4 @@
-
+import streamlit as st
 import os
 import json
 import time
@@ -23,18 +23,20 @@ load_dotenv(BASE_DIR / ".env", override=True)
 
 def get_groq_client():
 
-    api_key = os.getenv("GROQ_API_KEY")
+    try:
+        api_key = st.secrets["GROQ_API_KEY"]
+    except Exception:
+        api_key = os.getenv("GROQ_API_KEY")
 
     if not api_key:
         raise ValueError(
-            "GROQ_API_KEY is missing. Check your .env file."
+            "GROQ_API_KEY is missing. Check your Streamlit Secrets or .env file."
         )
 
     return OpenAI(
         api_key=api_key,
         base_url="https://api.groq.com/openai/v1"
     )
-
 
 # ==========================================
 # GENERATE POSTURE REPORT
