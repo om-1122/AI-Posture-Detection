@@ -1,10 +1,8 @@
-
 import streamlit as st
 import numpy as np
 import json
-import traceback
 
-from PIL import Image, ImageOps
+from PIL import Image
 from dotenv import load_dotenv
 
 from posture_det import (
@@ -74,69 +72,20 @@ if uploaded_file is not None:
         # READ ORIGINAL IMAGE
         # ==================================
 
-        st.write("### Step 1: Reading Uploaded Image")
+        image = Image.open(
+            uploaded_file
+        ).convert("RGB")
 
-        uploaded_file.seek(0)
-
-        image = Image.open(uploaded_file)
-
-        image = ImageOps.exif_transpose(image)
-
-        image = image.convert("RGB")
-
-        image_array = np.asarray(
-            image,
-            dtype=np.uint8
-        )
-
-        # ==================================
-        # IMAGE DEBUG INFORMATION
-        # ==================================
-
-        st.success("Image successfully received!")
-
-        st.write("Image format:", image.format)
-
-        st.write("Image dimensions:", image.size)
-
-        st.write("Array shape:", image_array.shape)
-
-        st.write("Array data type:", image_array.dtype)
-
-        st.write(
-            "Pixel minimum:",
-            int(image_array.min())
-        )
-
-        st.write(
-            "Pixel maximum:",
-            int(image_array.max())
-        )
-
-        # ==================================
-        # DISPLAY ORIGINAL IMAGE
-        # ==================================
+        image_array = np.array(image)
 
         st.divider()
-
-        st.header("📸 Original Photograph")
-
-        st.image(
-            image,
-            caption="Uploaded Original Photograph",
-            use_container_width=True
-        )
 
         # ==================================
         # MEDIAPIPE DETECTION
         # ==================================
 
-        st.divider()
-
-        st.header("🤖 AI Human Detection")
-
         with st.spinner(
-            "MediaPipe is detecting human body landmarks..."
+            "Detecting human body landmarks..."
         ):
 
             annotated_image, landmarks, width, height = (
@@ -144,41 +93,63 @@ if uploaded_file is not None:
             )
 
         # ==================================
-        # DISPLAY RECOGNIZED IMAGE
+        # DISPLAY BOTH IMAGES
         # ==================================
 
-        st.header("📷 Recognized Photograph")
+        st.header("📸 Posture Detection Images")
 
-        if annotated_image is not None:
+        col1, col2 = st.columns(2)
 
-            annotated_image = np.asarray(
-                annotated_image,
-                dtype=np.uint8
-            )
+        with col1:
 
-            st.write(
-                "Recognized image shape:",
-                annotated_image.shape
-            )
-
-            st.write(
-                "Recognized image pixel range:",
-                int(annotated_image.min()),
-                "to",
-                int(annotated_image.max())
-            )
+            st.subheader("Original Photograph")
 
             st.image(
-                annotated_image,
-                caption="MediaPipe Pose Detection",
+                image_array,
                 channels="RGB",
                 use_container_width=True
             )
 
-        else:
+        with col2:
 
-            st.warning(
-                "MediaPipe did not detect a human body."
+            st.subheader("Recognized Photograph")
+
+            if annotated_image is not None:
+
+                st.image(
+                    annotated_image,
+                    channels="RGB",
+                    caption="MediaPipe Pose Detection",
+                    use_container_width=True
+                )
+
+            else:
+
+                st.warning(
+                    "No human body detected."
+                )
+
+        # ==================================
+        # IMAGE DEBUG INFORMATION
+        # ==================================
+
+        with st.expander("Image Information"):
+
+            st.write(
+                "Original image dimensions:",
+                image_array.shape
+            )
+
+            if annotated_image is not None:
+
+                st.write(
+                    "Recognized image dimensions:",
+                    annotated_image.shape
+                )
+
+            st.write(
+                "Landmarks detected:",
+                landmarks is not None
             )
 
         # ==================================
@@ -188,9 +159,8 @@ if uploaded_file is not None:
         if landmarks is None:
 
             st.error(
-                "No human body detected. "
-                "Please upload a clear photograph showing "
-                "the person's body."
+                "No person detected. "
+                "Please upload another clear photograph."
             )
 
         else:
@@ -214,7 +184,7 @@ if uploaded_file is not None:
             st.header("📍 Detected Body Landmarks")
 
             st.write(
-                "Total landmarks detected:",
+                "Total landmarks:",
                 len(details)
             )
 
@@ -328,8 +298,7 @@ if uploaded_file is not None:
 
                 data=json.dumps(
                     analysis,
-                    indent=4,
-                    default=float
+                    indent=4
                 ),
 
                 file_name="posture_measurements.json",
@@ -414,12 +383,6 @@ if uploaded_file is not None:
             f"Application Error: {error}"
         )
 
-        with st.expander("Technical Error Details"):
-
-            st.code(
-                traceback.format_exc()
-            )
-
 
 else:
 
@@ -437,4 +400,4 @@ st.divider()
 st.caption(
     "AI Human Posture Detection System | "
     "Python + MediaPipe + OpenCV + Streamlit + Groq AI"
-)
+) this i smy coe and my ige is not iplayong on the website so what i the fix
