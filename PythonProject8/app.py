@@ -42,7 +42,7 @@ st.set_page_config(
 # HEADER
 # ==========================================
 
-st.title("🧍 AI Human Posture Detection")
+st.title("🧍 ErgoSmart – AI-Powered Posture Analysis")
 
 st.write(
     "An AI-based system for human posture detection, "
